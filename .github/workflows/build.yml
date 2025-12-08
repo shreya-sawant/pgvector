@@ -39,6 +39,9 @@ jobs:
             SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE usename='test';
 
             DO $$BEGIN
+              IF EXISTS (SELECT 1 FROM pg_database WHERE datname='contrib_regression') THEN
+                EXECUTE 'DROP DATABASE contrib_regression'; 
+              END IF;
               IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='test') THEN
                 DROP OWNED BY test CASCADE;
                 DROP ROLE test;
