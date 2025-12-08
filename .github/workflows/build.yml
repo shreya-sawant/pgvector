@@ -28,7 +28,23 @@ jobs:
             runs_on: s390x_24_linux
     steps:
       - uses: actions/checkout@v5
-      - uses: ankane/setup-postgres@v2
+      - name: Setup PostgreSQL 16 directly on Ubuntu 24.04 s390x (PGDG)
+        if: ${{ matrix.runs_on == 's390x_24_linux' }}
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y postgresql-common curl ca-certificates
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+
+          sudo apt-get install -y postgresql-16 postgresql-client-16 postgresql-server-dev-16
+
+          sudo systemctl enable --now postgresql || true
+          
+          psql -U postgres -c "SELECT version();" || true
+        
+      - name: Setup PostgreSQL (ankane action)
+        if: ${{ matrix.runs_on != 's390x_24_linux' }}
+        uses: ankane/setup-postgres@v1
         with:
           postgres-version: ${{ matrix.postgres }}
           dev-files: true
