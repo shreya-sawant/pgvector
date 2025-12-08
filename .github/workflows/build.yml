@@ -32,12 +32,12 @@ jobs:
       - name: Clean existing "test" role
         if: ${{ matrix.runs_on == 's390x_22_linux' }}
         shell: bash
-        run: |
-          sudo -iu postgres psql -c "DROP DATABASE IF EXISTS contrib_regression; DROP ROLE IF EXISTS test;"
+        run: sudo systemctl stop postgresql@14-main || true
 
       - name: Setup PostgreSQL 16 directly on Ubuntu 24.04 s390x (PGDG)
         if: ${{ matrix.runs_on == 's390x_24_linux' }}
         run: |
+          sudo systemctl stop postgresql || true
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y postgresql-common curl ca-certificates
