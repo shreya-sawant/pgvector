@@ -54,8 +54,6 @@ jobs:
 
           sudo systemctl enable --now postgresql || true
           
-          psql -U postgres -c "SELECT version();" || true
-
           sudo -iu postgres createuser -s test
         
       - name: Setup PostgreSQL (ankane action)
