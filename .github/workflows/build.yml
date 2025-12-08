@@ -30,9 +30,10 @@ jobs:
       - uses: actions/checkout@v5
       
       - name: Clean existing "test" role
+        if: ${{ matrix.runs_on == 's390x_22_linux' }}
         shell: bash
         run: |
-          sudo -iu postgres psql -c "DROP ROLE IF EXISTS test;"
+          sudo -iu postgres psql -c "DROP DATABASE IF EXISTS contrib_regression; DROP ROLE IF EXISTS test;"
 
       - name: Setup PostgreSQL 16 directly on Ubuntu 24.04 s390x (PGDG)
         if: ${{ matrix.runs_on == 's390x_24_linux' }}
