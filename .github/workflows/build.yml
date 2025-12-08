@@ -34,25 +34,16 @@ jobs:
         shell: bash
         run: |
             set -euo pipefail
-            psql -U postgres -v ON_ERROR_STOP=1 -X -q <<'SQL'
-            DO $$
-            BEGIN
-            -- Terminate any active sessions for role "test"
-            PERFORM pg_terminate_backend(pid)
-            FROM pg_stat_activity
-            WHERE usename = 'test';
+            sudo systemctl start postgresql || true
+            SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE usename='test';
 
-            -- Proceed only if role exists
-            IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'test') THEN
-            -- Transfer ownership to postgres, then clean up ACLs
-            REASSIGN OWNED BY test TO postgres;
-            DROP OWNED BY test;
-
-            -- Finally drop the role
-            DROP ROLE test;
-            END IF;
-            END;
-            $$;
+            DO $$BEGIN
+              IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='test') THEN
+                REASSIGN OWNED BY test TO postgres;
+                DROP OWNED BY test;
+                DROP ROLE test;
+              END IF;
+            END$$;
             SQL
 
       - name: Setup PostgreSQL 16 directly on Ubuntu 24.04 s390x (PGDG)
