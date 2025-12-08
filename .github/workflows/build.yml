@@ -2,7 +2,7 @@ name: build
 on: [push, pull_request]
 jobs:
   ubuntu:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runs_on || matrix.os }}
     if: ${{ !startsWith(github.ref_name, 'mac') && !startsWith(github.ref_name, 'windows') }}
     strategy:
       fail-fast: false
@@ -22,6 +22,10 @@ jobs:
             os: ubuntu-22.04-arm
           - postgres: 13
             os: ubuntu-22.04
+          - postgres: 14
+            runs_on: s390x_22_linux
+          - postgres: 16
+            runs_on: s390x_24_linux
     steps:
       - uses: actions/checkout@v5
       - uses: ankane/setup-postgres@v1
