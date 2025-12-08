@@ -40,8 +40,7 @@ jobs:
 
             DO $$BEGIN
               IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='test') THEN
-                REASSIGN OWNED BY test TO postgres;
-                DROP OWNED BY test;
+                DROP OWNED BY test CASCADE;
                 DROP ROLE test;
               END IF;
             END$$;
