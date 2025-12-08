@@ -35,6 +35,7 @@ jobs:
         run: |
             set -euo pipefail
             sudo systemctl start postgresql || true
+            sudo -iu postgres psql -X -q <<'SQL'
             SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE usename='test';
 
             DO $$BEGIN
