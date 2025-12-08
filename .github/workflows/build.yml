@@ -28,6 +28,12 @@ jobs:
             runs_on: s390x_24_linux
     steps:
       - uses: actions/checkout@v5
+      
+      - name: Clean existing "test" role
+        shell: bash
+        run: |
+          sudo -iu postgres psql -c "DROP ROLE IF EXISTS test;"
+
       - name: Setup PostgreSQL 16 directly on Ubuntu 24.04 s390x (PGDG)
         if: ${{ matrix.runs_on == 's390x_24_linux' }}
         run: |
@@ -41,6 +47,8 @@ jobs:
           sudo systemctl enable --now postgresql || true
           
           psql -U postgres -c "SELECT version();" || true
+
+          sudo -iu postgres createuser -s test
         
       - name: Setup PostgreSQL (ankane action)
         if: ${{ matrix.runs_on != 's390x_24_linux' }}
