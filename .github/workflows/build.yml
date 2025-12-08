@@ -28,7 +28,7 @@ jobs:
             runs_on: s390x_24_linux
     steps:
       - uses: actions/checkout@v5
-      - uses: ankane/setup-postgres@v1
+      - uses: ankane/setup-postgres@v2
         with:
           postgres-version: ${{ matrix.postgres }}
           dev-files: true
