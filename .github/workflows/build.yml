@@ -22,9 +22,39 @@ jobs:
             os: ubuntu-22.04-arm
           - postgres: 13
             os: ubuntu-22.04
+          - postgres: 14
+            os: ubuntu-22.04-s390x
+          - postgres: 16
+            os: ubuntu-24.04-s390x
     steps:
       - uses: actions/checkout@v6
+      - name: Clean existing "test" role and PGDG entries
+        if: ${{ matrix.os == 'ubuntu-22.04-s390x' || matrix.os == 'ubuntu-24.04-s390x' }}
+        shell: bash
+        run: |
+            set -euo pipefail
+            sudo systemctl start postgresql || true
+            sudo -iu postgres psql -X -q <<'SQL'
+            SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='contrib_regression';
+            DROP DATABASE IF EXISTS contrib_regression;
+            DROP OWNED BY test CASCADE;
+            DROP ROLE test;
+            SQL
+            sudo rm -f /etc/apt/sources.list.d/pgdg.list
+            sudo rm -f /etc/apt/sources.list.d/postgresql.list
+            sudo rm -f /etc/apt/sources.list.d/*postgresql*
+      - name: Setup PostgreSQL 16 directly on Ubuntu 24.04 s390x (PGDG)
+        if: ${{ matrix.os == 'ubuntu-24.04-s390x' }}
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y postgresql-common curl ca-certificates
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y postgresql-16 postgresql-client-16 postgresql-server-dev-16
+          sudo systemctl enable --now postgresql || true
+          sudo -iu postgres createuser -s test
       - uses: ankane/setup-postgres@v1
+        if: ${{ matrix.os != 'ubuntu-24.04-s390x' }}
         with:
           postgres-version: ${{ matrix.postgres }}
           dev-files: true
